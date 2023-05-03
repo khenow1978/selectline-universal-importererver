@@ -1,6 +1,6 @@
 import { Token } from '@/classes/Token';
 import { Product } from '@/interfaces/interfaces';
-import { Controller, Get, HttpException, Logger, Param, Post, Put, Req } from '@nestjs/common';
+import { Controller, Get, HttpException, HttpStatus, Logger, Param, Post, Put, Req } from '@nestjs/common';
 import {ignoreArticleForPriceList} from './../../utilities/ignorePriceArticleList'
 
 @Controller()
@@ -47,7 +47,10 @@ export class SelectlineUniversalImporterController {
   ) {
     await new Promise<void>(async (resolve) => {
       if(!reqParam['id'] || !req.body['memo']){
-        throw new HttpException(`OrderConfig cant be saved in Selectline.`, 401);
+        return {
+          message: `OrderConfig cant be saved in Selectline.`,
+          status: HttpStatus.BAD_REQUEST,
+        };
       }
       const orderId = reqParam['id'];
       const orderConfig = {
@@ -68,7 +71,10 @@ export class SelectlineUniversalImporterController {
   ) {
     await new Promise<void>(async (resolve) => {
       if(!reqParam['id']){
-        throw new HttpException(`Product cant be saved in Selectline.`, 401);
+        return {
+          message: 'ID parameter is missing',
+          status: HttpStatus.BAD_REQUEST,
+        };
       }
       const orderId = reqParam['id'];
       
@@ -87,7 +93,10 @@ export class SelectlineUniversalImporterController {
   async addComment(@Req() req: Request, @Param() reqParam) {
     await new Promise<void>(async (resolve) => {
       if(!reqParam['id'] || !req.body['memo']){
-        throw new HttpException(`Comment cant be saved in Selectline.`, 401);
+        return {
+          message: 'ID parameter is missing',
+          status: HttpStatus.BAD_REQUEST,
+        };
       }
       const orderId = reqParam['id'];
       const comment = req.body['memo'];
@@ -101,7 +110,10 @@ export class SelectlineUniversalImporterController {
   async addSubTotal(@Req() req: Request, @Param() reqParam) {
     await new Promise<void>(async (resolve) => {
       if(!reqParam['id']){
-        throw new HttpException(`PartialSum cant be saved in Selectline.`, 401);
+        return {
+          message: 'ID parameter is missing',
+          status: HttpStatus.BAD_REQUEST,
+        };
       }
       const orderId = reqParam['id'];
       const discount = req.body['DiscountPercent'];
@@ -115,7 +127,10 @@ export class SelectlineUniversalImporterController {
   async addDocumentData(@Req() req: Request, @Param() reqParam) {
     await new Promise<void>(async (resolve) => {
       if(!reqParam['id']){
-        throw new HttpException(`Order cant be saved in Selectline.`, 401);
+        return {
+          message: 'ID parameter is missing',
+          status: HttpStatus.BAD_REQUEST,
+        };
       }
       const orderId = reqParam['id'];
       const lockBookDrawId = req.body['lockBookDrawId'];
@@ -142,14 +157,20 @@ export class SelectlineUniversalImporterController {
             body: JSON.stringify(product),
           }).then((response) => {
             if (!response.ok) {
-              throw new HttpException(`Product cant be saved in Selectline. ${JSON.stringify(product)}`, 401);
+              return {
+                message: `Product cant be saved in Selectline. ${JSON.stringify(product)}`,
+                status: HttpStatus.BAD_REQUEST,
+              };
             }
             resolve()
           });
         });
       } catch (error) {
-        throw new Error(product.ArticleNumber)
         reject()
+        return {
+          message: product.ArticleNumber,
+          status: HttpStatus.BAD_REQUEST,
+        };
       }
     })
     }
@@ -168,14 +189,20 @@ export class SelectlineUniversalImporterController {
             body: JSON.stringify(config)
           }).then((response) => {
             if (!response.ok) {
-              throw new HttpException(`Config cant be saved in Selectline. ${response.statusText}`, 401);
+              return {
+                message: `Config cant be saved in Selectline. ${response.statusText}`,
+                status: HttpStatus.BAD_REQUEST,
+              };
             }
             resolve()
           });
         })
        } catch (error) {
         reject()
-        throw new HttpException(`Config cant be saved in Selectline.`, 401);
+        return {
+          message: `Config cant be saved in Selectline.`,
+          status: HttpStatus.BAD_REQUEST,
+        };
        } 
       })
     }
@@ -196,7 +223,10 @@ export class SelectlineUniversalImporterController {
             }),
           }).then((reqResponse) => {
             if (!reqResponse.ok) {
-              throw new HttpException(`PartialSum cant be saved in Selectline. ${reqResponse.statusText}`, 401);
+              return {
+                message: `PartialSum cant be saved in Selectline. ${reqResponse.statusText}`,
+                status: HttpStatus.BAD_REQUEST,
+              };
             }
             resolve();
           });
@@ -224,7 +254,10 @@ export class SelectlineUniversalImporterController {
             }),
           }).then((response) => {
             if (!response.ok) {
-              throw new HttpException(`Comment cant be saved in Selectline. ${response.statusText}`, 401);
+              return {
+                message: `Comment cant be saved in Selectline. ${response.statusText}`,
+                status: HttpStatus.BAD_REQUEST,
+              };
             }
             resolve();
           });
@@ -251,7 +284,10 @@ export class SelectlineUniversalImporterController {
         }),
       }).then(async (response) => {
         if (!response.ok) {
-          throw new HttpException(`Cant Login. ${response.statusText}`, 401);
+          return {
+            message: `Cant Login. ${response.statusText}`,
+            status: HttpStatus.BAD_REQUEST,
+          };
         }
         const result = await response.json();
         this.getToken().setAccessToken(result.AccessToken);
@@ -274,7 +310,10 @@ export class SelectlineUniversalImporterController {
             },
           }).then((response) => {
             if (!response.ok) {
-              throw new HttpException(`Oder is active. Please save before saving order.`, 512);
+              return {
+                message: `Oder is active. Please save before saving order.`,
+                status: HttpStatus.BAD_REQUEST,
+              };
             }
             resolve();
           });
@@ -300,14 +339,20 @@ export class SelectlineUniversalImporterController {
           })
         }).then((response) => {
           if (!response.ok) {
-            throw new HttpException(`Config cant be saved in Selectline. ${response.statusText}`, 401);
+            return {
+              message: `Config cant be saved in Selectline. ${response.statusText}`,
+              status: HttpStatus.BAD_REQUEST,
+            };
           }
           resolve()
         });
       })
      } catch (error) {
       reject()
-      throw new HttpException(`Config cant be saved in Selectline.`, 401);
+      return {
+        message: `Config cant be saved in Selectline.`,
+        status: HttpStatus.BAD_REQUEST,
+      };
      } 
     })
   }
